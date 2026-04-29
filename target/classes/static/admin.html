@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>系统管理</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+        .sidebar {
+            width: 200px;
+            background-color: #333;
+            color: white;
+            padding: 20px;
+        }
+        .sidebar h2 {
+            margin-top: 0;
+            font-size: 18px;
+        }
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+        .sidebar li {
+            margin: 10px 0;
+        }
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+            display: block;
+            padding: 8px;
+            border-radius: 4px;
+        }
+        .sidebar a:hover {
+            background-color: #555;
+        }
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        h1 {
+            color: #333;
+        }
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin: 10px 0;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        .btn-primary {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .btn-secondary {
+            background-color: #f0f0f0;
+            color: #333;
+        }
+        .btn-danger {
+            background-color: #f44336;
+            color: white;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 侧边栏 -->
+        <div class="sidebar">
+            <h2>系统管理</h2>
+            <ul>
+                <li><a href="#" onclick="showSection('dashboard')">仪表盘</a></li>
+                <li><a href="#" onclick="showSection('users')">用户管理</a></li>
+                <li><a href="#" onclick="showSection('knowledge')">知识图谱管理</a></li>
+                <li><a href="#" onclick="showSection('questions')">题库管理</a></li>
+                <li><a href="#" onclick="showSection('paths')">学习路径管理</a></li>
+                <li><a href="#" onclick="showSection('system')">系统监控</a></li>
+            </ul>
+        </div>
+        
+        <!-- 主内容区 -->
+        <div class="main-content">
+            <!-- 仪表盘 -->
+            <div id="dashboard" class="content-section active">
+                <h1>系统仪表盘</h1>
+                <div class="card">
+                    <h2>系统状态</h2>
+                    <div id="systemStatus"></div>
+                </div>
+            </div>
+            
+            <!-- 用户管理 -->
+            <div id="users" class="content-section">
+                <h1>用户管理</h1>
+                <div class="card">
+                    <h2>用户列表</h2>
+                    <table id="userTable">
+                        <thead>
+                            <tr>
+                                <th>用户ID</th>
+                                <th>用户名</th>
+                                <th>注册时间</th>
+                                <th>状态</th>
+                                <th>角色</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userTableBody">
+                            <!-- 用户数据将通过API加载 -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="card">
+                    <h2>添加用户</h2>
+                    <form id="addUserForm">
+                        <div class="form-group">
+                            <label for="username">用户名</label>
+                            <input type="text" id="username" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="password">密码</label>
+                            <input type="password" id="password" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="roleId">角色</label>
+                            <select id="roleId">
+                                <option value="1">学生</option>
+                                <option value="2">管理员</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">添加用户</button>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- 知识图谱管理 -->
+            <div id="knowledge" class="content-section">
+                <h1>知识图谱管理</h1>
+                <div class="card">
+                    <h2>知识点列表</h2>
+                    <table id="knowledgeTable">
+                        <thead>
+                            <tr>
+                                <th>知识点ID</th>
+                                <th>名称</th>
+                                <th>模块</th>
+                                <th>难度</th>
+                                <th>考查频次</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="knowledgeTableBody">
+                            <!-- 知识点数据将通过API加载 -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="card">
+                    <h2>添加知识点</h2>
+                    <form id="addKnowledgeForm">
+                        <div class="form-group">
+                            <label for="kpId">知识点ID</label>
+                            <input type="text" id="kpId" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="name">名称</label>
+                            <input type="text" id="name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="module">模块</label>
+                            <select id="module">
+                                <option value="常识判断">常识判断</option>
+                                <option value="言语理解">言语理解</option>
+                                <option value="数量关系">数量关系</option>
+                                <option value="判断推理">判断推理</option>
+                                <option value="资料分析">资料分析</option>
+                                <option value="申论">申论</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="difficulty">难度</label>
+                            <input type="number" id="difficulty" min="0" max="1" step="0.1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="frequency">考查频次</label>
+                            <input type="number" id="frequency" min="1" max="5" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">添加知识点</button>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- 题库管理 -->
+            <div id="questions" class="content-section">
+                <h1>题库管理</h1>
+                <div class="card">
+                    <h2>推荐题目预览</h2>
+                    <div id="questionPreview"></div>
+                </div>
+            </div>
+            
+            <!-- 学习路径管理 -->
+            <div id="paths" class="content-section">
+                <h1>学习路径管理</h1>
+                <div class="card">
+                    <h2>学习路径列表</h2>
+                    <table id="pathTable">
+                        <thead>
+                            <tr>
+                                <th>路径ID</th>
+                                <th>路径名称</th>
+                                <th>用户ID</th>
+                                <th>状态</th>
+                                <th>进度</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pathTableBody">
+                            <!-- 学习路径数据将通过API加载 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- 系统监控 -->
+            <div id="system" class="content-section">
+                <h1>系统监控</h1>
+                <div class="card">
+                    <h2>系统状态</h2>
+                    <div id="systemDetails"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 显示指定的内容区域
+        function showSection(sectionId) {
+            // 隐藏所有内容区域
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            // 显示选中的内容区域
+            document.getElementById(sectionId).classList.add('active');
+            
+            // 加载对应的数据
+            switch (sectionId) {
+                case 'dashboard':
+                    loadSystemStatus();
+                    break;
+                case 'users':
+                    loadUsers();
+                    break;
+                case 'knowledge':
+                    loadKnowledgePoints();
+                    break;
+                case 'questions':
+                    loadQuestionPreview();
+                    break;
+                case 'paths':
+                    loadLearningPaths();
+                    break;
+                case 'system':
+                    loadSystemDetails();
+                    break;
+            }
+        }
+        
+        // 加载系统状态
+        function loadSystemStatus() {
+            const statusDiv = document.getElementById('systemStatus');
+            statusDiv.innerHTML = '<div class="loading">加载中...</div>';
+            
+            fetch('/api/admin/system/status')
+                .then(response => response.json())
+                .then(data => {
+                    statusDiv.innerHTML = `
+                        <p>状态: ${data.status}</p>
+                        <p>时间戳: ${new Date(data.timestamp).toLocaleString()}</p>
+                    `;
+                })
+                .catch(error => {
+                    statusDiv.innerHTML = '<div class="loading">加载失败</div>';
+                    console.error('Error:', error);
+                });
+        }
+        
+        // 加载用户列表
+        function loadUsers() {
+            const tableBody = document.getElementById('userTableBody');
+            tableBody.innerHTML = '<tr><td colspan="6" class="loading">加载中...</td></tr>';
+            
+            fetch('/api/admin/users')
+                .then(response => response.json())
+                .then(data => {
+                    tableBody.innerHTML = '';
+                    data.forEach(user => {
+                        tableBody.innerHTML += `
+                            <tr>
+                                <td>${user.id}</td>
+                                <td>${user.username}</td>
+                                <td>${user.registerTime}</td>
+                                <td>${user.isActive ? '激活' : '未激活'}</td>
+                                <td>${user.roleId === 1 ? '学生' : '管理员'}</td>
+                                <td>
+                                    <button class="btn btn-secondary">编辑</button>
+                                    <button class="btn btn-danger">删除</button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                })
+                .catch(error => {
+                    tableBody.innerHTML = '<tr><td colspan="6" class="loading">加载失败</td></tr>';
+                    console.error('Error:', error);
+                });
+        }
+        
+        // 加载知识点列表
+        function loadKnowledgePoints() {
+            const tableBody = document.getElementById('knowledgeTableBody');
+            tableBody.innerHTML = '<tr><td colspan="6" class="loading">加载中...</td></tr>';
+            
+            fetch('/api/admin/knowledge-points')
+                .then(response => response.json())
+                .then(data => {
+                    tableBody.innerHTML = '';
+                    data.forEach(kp => {
+                        tableBody.innerHTML += `
+                            <tr>
+                                <td>${kp.kpId}</td>
+                                <td>${kp.name}</td>
+                                <td>${kp.module}</td>
+                                <td>${kp.difficulty}</td>
+                                <td>${kp.frequency}</td>
+                                <td>
+                                    <button class="btn btn-secondary">编辑</button>
+                                    <button class="btn btn-danger">删除</button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                })
+                .catch(error => {
+                    tableBody.innerHTML = '<tr><td colspan="6" class="loading">加载失败</td></tr>';
+                    console.error('Error:', error);
+                });
+        }
+        
+        // 加载题目预览
+        function loadQuestionPreview() {
+            const previewDiv = document.getElementById('questionPreview');
+            previewDiv.innerHTML = '<div class="loading">加载中...</div>';
+            
+            fetch('/api/admin/questions/recommend?userId=1&limit=5')
+                .then(response => response.json())
+                .then(data => {
+                    previewDiv.innerHTML = '';
+                    data.forEach((question, index) => {
+                        previewDiv.innerHTML += `
+                            <div style="margin-bottom: 20px; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                                <h3>题目 ${index + 1}</h3>
+                                <p>${question.questionContent}</p>
+                                <p>模块: ${question.module}</p>
+                                <p>难度: ${question.difficulty}</p>
+                            </div>
+                        `;
+                    });
+                })
+                .catch(error => {
+                    previewDiv.innerHTML = '<div class="loading">加载失败</div>';
+                    console.error('Error:', error);
+                });
+        }
+        
+        // 加载学习路径列表
+        function loadLearningPaths() {
+            const tableBody = document.getElementById('pathTableBody');
+            tableBody.innerHTML = '<tr><td colspan="6" class="loading">加载中...</td></tr>';
+            
+            fetch('/api/admin/learning-paths')
+                .then(response => response.json())
+                .then(data => {
+                    tableBody.innerHTML = '';
+                    if (data && data.length > 0) {
+                        data.forEach(path => {
+                            tableBody.innerHTML += `
+                                <tr>
+                                    <td>${path.id}</td>
+                                    <td>${path.pathName}</td>
+                                    <td>${path.userId}</td>
+                                    <td>${path.status}</td>
+                                    <td>${path.progress}%</td>
+                                    <td>
+                                        <button class="btn btn-secondary">编辑</button>
+                                        <button class="btn btn-danger">删除</button>
+                                    </td>
+                                </tr>
+                            `;
+                        });
+                    } else {
+                        tableBody.innerHTML = '<tr><td colspan="6" class="loading">暂无学习路径</td></tr>';
+                    }
+                })
+                .catch(error => {
+                    tableBody.innerHTML = '<tr><td colspan="6" class="loading">加载失败</td></tr>';
+                    console.error('Error:', error);
+                });
+        }
+        
+        // 加载系统详情
+        function loadSystemDetails() {
+            const detailsDiv = document.getElementById('systemDetails');
+            detailsDiv.innerHTML = '<div class="loading">加载中...</div>';
+            
+            fetch('/api/admin/system/status')
+                .then(response => response.json())
+                .then(data => {
+                    detailsDiv.innerHTML = `
+                        <p>系统状态: ${data.status}</p>
+                        <p>当前时间: ${new Date(data.timestamp).toLocaleString()}</p>
+                        <p>服务器运行正常</p>
+                    `;
+                })
+                .catch(error => {
+                    detailsDiv.innerHTML = '<div class="loading">加载失败</div>';
+                    console.error('Error:', error);
+                });
+        }
+        
+        // 初始化页面
+        window.onload = function() {
+            showSection('dashboard');
+        };
+    </script>
+</body>
+</html>

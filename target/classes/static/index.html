@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>考公智能学习系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', 'PingFang SC', sans-serif;
+            background: #f4f7f6;
+            min-height: 100vh;
+        }
+        .header {
+            background: #00b38a;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .header h1 {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        .module-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        .module-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            padding: 30px;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .module-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+        .module-card h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        .module-card p {
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        .module-card a {
+            display: inline-block;
+            background: #00b38a;
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: bold;
+            transition: background 0.3s ease;
+        }
+        .module-card a:hover {
+            background: #009673;
+        }
+        .footer {
+            background: #333;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            margin-top: 50px;
+        }
+        .footer p {
+            font-size: 14px;
+        }
+        #targetModal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-body {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            width: 400px;
+            text-align: center;
+        }
+        .modal-body h3 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .modal-body p {
+            color: #666;
+            margin-bottom: 20px;
+        }
+        select {
+            width: 100%;
+            padding: 12px;
+            margin: 20px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        button {
+            background: #00b38a;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: background 0.3s ease;
+        }
+        button:hover {
+            background: #009673;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>考公智能学习辅助系统</h1>
+    </div>
+
+    <div class="container">
+        <h2 style="text-align: center; color: #333; margin-bottom: 10px;">欢迎使用考公智能学习辅助系统</h2>
+        <p style="text-align: center; color: #666; margin-bottom: 30px;">基于知识图谱和智能算法，为您提供个性化的学习体验</p>
+
+        <div class="module-grid">
+            <div class="module-card">
+                <h3>📊 知识图谱可视化</h3>
+                <p>直观展示考公知识体系，掌握知识点间的关联关系</p>
+                <a href="/graph.html">进入模块</a>
+            </div>
+            <div class="module-card">
+                <h3>🎯 能力评估</h3>
+                <p>全面评估你的知识掌握程度，生成能力雷达图</p>
+                <a href="/ability.html">进入模块</a>
+            </div>
+            <div class="module-card">
+                <h3>🔍 错题根因分析</h3>
+                <p>深入分析错题原因，提供针对性的补救建议</p>
+                <a href="/wrong_question_analysis.html">进入模块</a>
+            </div>
+            <div class="module-card">
+                <h3>🚀 自适应学习路径</h3>
+                <p>根据你的能力水平，生成个性化的学习路径</p>
+                <a href="/learning_path.html">进入模块</a>
+            </div>
+            <div class="module-card">
+                <h3>📚 个性化题组推荐</h3>
+                <p>基于你的学习情况，推荐最适合的练习题</p>
+                <a href="/question_recommendation.html">进入模块</a>
+            </div>
+            <div class="module-card">
+                <h3>⚙️ 系统管理</h3>
+                <p>管理用户、知识图谱和题库（仅管理员）</p>
+                <a href="/admin.html">进入模块</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>© 2026 考公智能学习辅助系统 | 基于论文《面向考公学生的智能学习辅助系统设计与实现》</p>
+    </div>
+
+    <div id="targetModal">
+        <div class="modal-body">
+            <h3>🎯 设定你的奋斗目标</h3>
+            <p>请选择你准备参加的考试：</p>
+            <select id="targetSelect">
+                <option value="国家公务员考试 (国考)">国家公务员考试 (国考)</option>
+                <option value="省级公务员考试 (省考)">省级公务员考试 (省考)</option>
+                <option value="事业单位招聘">事业单位招聘</option>
+            </select>
+            <button onclick="confirmTarget()">确认并进入</button>
+        </div>
+    </div>
+
+    <script>
+        function confirmTarget() {
+            const goal = document.getElementById('targetSelect').value;
+            // 以后这里可以加 fetch 发送到后端保存
+            document.getElementById('targetModal').style.display = 'none';
+            alert("目标设定成功！祝你旗开得胜！");
+        }
+    </script>
+</body>
+</html>

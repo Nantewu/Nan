@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个性化题组推荐</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .controls {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+        }
+        .controls input, .controls button, .controls select {
+            margin: 5px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .controls button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .controls button:hover {
+            background-color: #45a049;
+        }
+        #recommendationResult {
+            margin-top: 20px;
+        }
+        .question-card {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 15px;
+            background-color: #f9f9f9;
+        }
+        .question-card h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .question-content {
+            margin: 10px 0;
+            font-size: 16px;
+        }
+        .options {
+            margin: 10px 0;
+        }
+        .option {
+            margin: 5px 0;
+            padding: 5px;
+            border: 1px solid #eee;
+            border-radius: 3px;
+        }
+        .option:hover {
+            background-color: #f0f0f0;
+        }
+        .question-info {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #666;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            font-size: 18px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>个性化题组推荐</h1>
+        
+        <div class="controls">
+            <label for="userId">用户ID:</label>
+            <input type="number" id="userId" value="1">
+            
+            <label for="limit">推荐数量:</label>
+            <input type="number" id="limit" value="5" min="1" max="20">
+            
+            <label for="recommendType">推荐类型:</label>
+            <select id="recommendType">
+                <option value="personalized">个性化推荐</option>
+                <option value="knowledgePoint">基于知识点</option>
+                <option value="module">基于模块</option>
+            </select>
+            
+            <div id="extraParams" style="display: none;">
+                <label for="kpId">知识点ID:</label>
+                <input type="text" id="kpId" value="kp1">
+                <label for="module">模块:</label>
+                <select id="module">
+                    <option value="常识判断">常识判断</option>
+                    <option value="言语理解">言语理解</option>
+                    <option value="数量关系">数量关系</option>
+                    <option value="判断推理">判断推理</option>
+                    <option value="资料分析">资料分析</option>
+                    <option value="申论">申论</option>
+                </select>
+            </div>
+            
+            <button onclick="getRecommendations()">获取推荐</button>
+        </div>
+        
+        <div id="recommendationResult">
+            <!-- 推荐结果将在这里显示 -->
+        </div>
+    </div>
+    
+    <script>
+        // 监听推荐类型变化
+        document.getElementById('recommendType').addEventListener('change', function() {
+            const extraParams = document.getElementById('extraParams');
+            if (this.value === 'personalized') {
+                extraParams.style.display = 'none';
+            } else {
+                extraParams.style.display = 'inline-block';
+            }
+        });
+        
+        // 获取推荐题组
+        function getRecommendations() {
+            const userId = document.getElementById('userId').value;
+            const limit = document.getElementById('limit').value;
+            const recommendType = document.getElementById('recommendType').value;
+            const resultContainer = document.getElementById('recommendationResult');
+            
+            // 显示加载状态
+            resultContainer.innerHTML = '<div class="loading">正在获取推荐题组...</div>';
+            
+            let url = '';
+            
+            if (recommendType === 'personalized') {
+                url = `/api/question/recommend?userId=${userId}&limit=${limit}`;
+            } else if (recommendType === 'knowledgePoint') {
+                const kpId = document.getElementById('kpId').value;
+                url = `/api/question/recommend/kp?kpId=${kpId}&limit=${limit}`;
+            } else if (recommendType === 'module') {
+                const module = document.getElementById('module').value;
+                url = `/api/question/recommend/module?module=${module}&limit=${limit}`;
+            }
+            
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    displayRecommendations(data);
+                })
+                .catch(error => {
+                    resultContainer.innerHTML = '<div class="loading">获取推荐失败，请稍后重试</div>';
+                    console.error('Error:', error);
+                });
+        }
+        
+        // 显示推荐结果
+        function displayRecommendations(questions) {
+            const resultContainer = document.getElementById('recommendationResult');
+            
+            if (questions.length === 0) {
+                resultContainer.innerHTML = '<div class="loading">暂无推荐题目</div>';
+                return;
+            }
+            
+            let html = '<h2>推荐题组</h2>';
+            
+            questions.forEach((question, index) => {
+                html += `
+                    <div class="question-card">
+                        <h3>题目 ${index + 1}</h3>
+                        <div class="question-content">${question.questionContent}</div>
+                        <div class="options">
+                            ${question.options.map((option, i) => `
+                                <div class="option">
+                                    ${String.fromCharCode(65 + i)}. ${option}
+                                    ${option === question.correctAnswer ? '<span style="color: green; font-weight: bold;"> (正确答案)</span>' : ''}
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="question-info">
+                            模块: ${question.module} | 难度: ${question.difficulty.toFixed(2)} | 考查频次: ${question.frequency}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            resultContainer.innerHTML = html;
+        }
+        
+        // 初始化页面
+        window.onload = function() {
+            // 默认获取个性化推荐
+            getRecommendations();
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>考公智能学习系统 - 仪表盘</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', 'PingFang SC', sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+        }
+        
+        .header {
+            background-color: #00b38a;
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            font-size: 20px;
+            font-weight: 600;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .user-info span {
+            font-size: 14px;
+        }
+        
+        .logout-btn {
+            background-color: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        
+        .logout-btn:hover {
+            background-color: rgba(255,255,255,0.3);
+        }
+        
+        .container {
+            display: flex;
+            min-height: calc(100vh - 60px);
+        }
+        
+        .sidebar {
+            width: 200px;
+            background-color: white;
+            border-right: 1px solid #e0e0e0;
+            padding: 20px 0;
+        }
+        
+        .sidebar-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-size: 14px;
+        }
+        
+        .sidebar-item:hover {
+            background-color: #f0f9f6;
+        }
+        
+        .sidebar-item.active {
+            background-color: #e0f2f1;
+            color: #00b38a;
+            font-weight: 500;
+        }
+        
+        .main-content {
+            flex: 1;
+            padding: 30px;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+        
+        .stat-card h3 {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .stat-card .value {
+            font-size: 24px;
+            font-weight: 600;
+            color: #00b38a;
+        }
+        
+        .section {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+        }
+        
+        .section h2 {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .recommendation-list {
+            list-style: none;
+        }
+        
+        .recommendation-item {
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .recommendation-item:hover {
+            background-color: #f9f9f9;
+        }
+        
+        .recommendation-item .title {
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+        
+        .recommendation-item .info {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: #00b38a;
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+        
+        .tab-container {
+            border-bottom: 1px solid #e0e0e0;
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            display: inline-block;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 14px;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .tab.active {
+            color: #00b38a;
+            border-bottom-color: #00b38a;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>考公智能学习系统</h1>
+        <div class="user-info">
+            <span id="user-name">特工_007</span>
+            <button class="logout-btn" onclick="logout()">退出登录</button>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="sidebar">
+            <div class="sidebar-item active" onclick="switchTab('dashboard')">仪表盘</div>
+            <div class="sidebar-item" onclick="switchTab('knowledge')">知识图谱</div>
+            <div class="sidebar-item" onclick="switchTab('recommendation')">个性化推荐</div>
+            <div class="sidebar-item" onclick="switchTab('wrong-questions')">错题分析</div>
+            <div class="sidebar-item" onclick="switchTab('learning-path')">学习路径</div>
+        </div>
+        
+        <div class="main-content">
+            <!-- 仪表盘 -->
+            <div id="dashboard" class="tab-content active">
+                <div class="dashboard-grid">
+                    <div class="stat-card">
+                        <h3>学习进度</h3>
+                        <div class="value">65%</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 65%"></div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>已学知识点</h3>
+                        <div class="value">128</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>错题数量</h3>
+                        <div class="value">42</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>学习天数</h3>
+                        <div class="value">35</div>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h2>个性化推荐</h2>
+                    <ul class="recommendation-list" id="recommendation-list">
+                        <!-- 推荐内容将通过JavaScript动态添加 -->
+                    </ul>
+                </div>
+                
+                <div class="section">
+                    <h2>学习路径</h2>
+                    <div id="learning-path-info">
+                        <!-- 学习路径信息将通过JavaScript动态添加 -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 知识图谱 -->
+            <div id="knowledge" class="tab-content">
+                <div class="section">
+                    <h2>知识图谱</h2>
+                    <div class="tab-container">
+                        <div class="tab active" onclick="switchKnowledgeTab('overview')">概览</div>
+                        <div class="tab" onclick="switchKnowledgeTab('details')">详情</div>
+                    </div>
+                    <div id="knowledge-overview" class="tab-content active">
+                        <!-- 知识图谱概览将通过JavaScript动态添加 -->
+                    </div>
+                    <div id="knowledge-details" class="tab-content">
+                        <!-- 知识图谱详情将通过JavaScript动态添加 -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 个性化推荐 -->
+            <div id="recommendation" class="tab-content">
+                <div class="section">
+                    <h2>个性化推荐</h2>
+                    <div id="recommendation-content">
+                        <!-- 推荐内容将通过JavaScript动态添加 -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 错题分析 -->
+            <div id="wrong-questions" class="tab-content">
+                <div class="section">
+                    <h2>错题分析</h2>
+                    <div id="wrong-question-analysis">
+                        <!-- 错题分析将通过JavaScript动态添加 -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 学习路径 -->
+            <div id="learning-path" class="tab-content">
+                <div class="section">
+                    <h2>学习路径</h2>
+                    <div id="learning-path-content">
+                        <!-- 学习路径内容将通过JavaScript动态添加 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 全局变量
+        let currentUser = {
+            id: 1,
+            username: "特工_007",
+            role: 0,
+            targetExam: "国家公务员考试"
+        };
+        
+        // 页面加载完成后初始化
+        window.onload = function() {
+            initDashboard();
+        };
+        
+        // 切换主标签页
+        function switchTab(tabName) {
+            // 隐藏所有标签页
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // 显示选中的标签页
+            document.getElementById(tabName).classList.add('active');
+            
+            // 更新侧边栏选中状态
+            document.querySelectorAll('.sidebar-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // 根据标签页初始化内容
+            if (tabName === 'dashboard') {
+                initDashboard();
+            } else if (tabName === 'knowledge') {
+                initKnowledge();
+            } else if (tabName === 'recommendation') {
+                initRecommendation();
+            } else if (tabName === 'wrong-questions') {
+                initWrongQuestions();
+            } else if (tabName === 'learning-path') {
+                initLearningPath();
+            }
+        }
+        
+        // 切换知识图谱子标签
+        function switchKnowledgeTab(tabName) {
+            // 隐藏所有子标签页
+            document.querySelectorAll('#knowledge .tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // 显示选中的子标签页
+            document.getElementById('knowledge-' + tabName).classList.add('active');
+            
+            // 更新标签页选中状态
+            document.querySelectorAll('#knowledge .tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+        
+        // 初始化仪表盘
+        function initDashboard() {
+            loadRecommendations();
+            loadLearningPath();
+        }
+        
+        // 加载个性化推荐
+        function loadRecommendations() {
+            fetch('/api/recommendation/popular?limit=5')
+                .then(response => response.json())
+                .then(data => {
+                    const list = document.getElementById('recommendation-list');
+                    list.innerHTML = '';
+                    
+                    data.forEach(item => {
+                        const li = document.createElement('li');
+                        li.className = 'recommendation-item';
+                        li.innerHTML = `
+                            <div class="title">${item.name || '推荐内容'}</div>
+                            <div class="info">${item.module || '模块'} - ${item.difficulty || '难度'}</div>
+                        `;
+                        list.appendChild(li);
+                    });
+                })
+                .catch(error => {
+                    console.error('加载推荐失败:', error);
+                });
+        }
+        
+        // 加载学习路径
+        function loadLearningPath() {
+            fetch(`/api/learning-path/current/${currentUser.id}`)
+                .then(response => response.json())
+                .then(data => {
+                    const info = document.getElementById('learning-path-info');
+                    if (data) {
+                        info.innerHTML = `
+                            <h3>${data.pathName}</h3>
+                            <p>目标考试: ${data.targetExam}</p>
+                            <p>状态: ${data.status}</p>
+                            <p>进度: ${data.progress}%</p>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${data.progress}%"></div>
+                            </div>
+                        `;
+                    } else {
+                        info.innerHTML = '<p>尚未创建学习路径，点击右侧学习路径标签页创建</p>';
+                    }
+                })
+                .catch(error => {
+                    console.error('加载学习路径失败:', error);
+                });
+        }
+        
+        // 初始化知识图谱
+        function initKnowledge() {
+            fetch('/api/knowledge/points')
+                .then(response => response.json())
+                .then(data => {
+                    const overview = document.getElementById('knowledge-overview');
+                    overview.innerHTML = `<h3>知识点总数: ${data.length}</h3>`;
+                })
+                .catch(error => {
+                    console.error('加载知识图谱失败:', error);
+                });
+        }
+        
+        // 初始化个性化推荐
+        function initRecommendation() {
+            const content = document.getElementById('recommendation-content');
+            content.innerHTML = '<p>正在加载个性化推荐...</p>';
+            
+            fetch('/api/recommendation/popular?limit=10')
+                .then(response => response.json())
+                .then(data => {
+                    content.innerHTML = '';
+                    const list = document.createElement('ul');
+                    list.className = 'recommendation-list';
+                    
+                    data.forEach(item => {
+                        const li = document.createElement('li');
+                        li.className = 'recommendation-item';
+                        li.innerHTML = `
+                            <div class="title">${item.name || '推荐内容'}</div>
+                            <div class="info">${item.module || '模块'} - ${item.difficulty || '难度'}</div>
+                        `;
+                        list.appendChild(li);
+                    });
+                    
+                    content.appendChild(list);
+                })
+                .catch(error => {
+                    console.error('加载推荐失败:', error);
+                });
+        }
+        
+        // 初始化错题分析
+        function initWrongQuestions() {
+            const content = document.getElementById('wrong-question-analysis');
+            content.innerHTML = '<p>正在加载错题分析...</p>';
+            
+            fetch(`/api/wrong-question/analyze/${currentUser.id}`)
+                .then(response => response.json())
+                .then(data => {
+                    content.innerHTML = `
+                        <h3>错题统计</h3>
+                        <p>总错题数: ${data.totalWrongCount}</p>
+                        <h4>知识点错误分布</h4>
+                        <div id="knowledge-point-error"></div>
+                        <h4>模块错误分布</h4>
+                        <div id="module-error"></div>
+                    `;
+                })
+                .catch(error => {
+                    console.error('加载错题分析失败:', error);
+                });
+        }
+        
+        // 初始化学习路径
+        function initLearningPath() {
+            const content = document.getElementById('learning-path-content');
+            content.innerHTML = '<p>正在加载学习路径...</p>';
+            
+            fetch(`/api/learning-path/user/${currentUser.id}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.length > 0) {
+                        content.innerHTML = '';
+                        data.forEach(path => {
+                            const div = document.createElement('div');
+                            div.className = 'section';
+                            div.innerHTML = `
+                                <h3>${path.pathName}</h3>
+                                <p>目标考试: ${path.targetExam}</p>
+                                <p>状态: ${path.status}</p>
+                                <p>进度: ${path.progress}%</p>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: ${path.progress}%"></div>
+                                </div>
+                            `;
+                            content.appendChild(div);
+                        });
+                    } else {
+                        content.innerHTML = `
+                            <p>尚未创建学习路径</p>
+                            <button onclick="createLearningPath()">创建学习路径</button>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    console.error('加载学习路径失败:', error);
+                });
+        }
+        
+        // 创建学习路径
+        function createLearningPath() {
+            fetch('/api/learning-path/recommend', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(currentUser)
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert('学习路径创建成功！');
+                initLearningPath();
+            })
+            .catch(error => {
+                console.error('创建学习路径失败:', error);
+            });
+        }
+        
+        // 退出登录
+        function logout() {
+            window.location.href = '/login.html';
+        }
+    </script>
+</body>
+</html>

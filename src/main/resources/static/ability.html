@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>能力评估</title>
+    <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .user-input {
+            display: flex;
+            gap: 10px;
+        }
+        .user-input input {
+            padding: 8px;
+            font-size: 14px;
+        }
+        .user-input button {
+            padding: 8px 16px;
+            font-size: 14px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .user-input button:hover {
+            background-color: #45a049;
+        }
+        .content {
+            display: flex;
+            gap: 20px;
+        }
+        .chart-container {
+            flex: 1;
+            height: 500px;
+        }
+        .report-container {
+            flex: 1;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .weak-points {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ffcccc;
+            border-radius: 5px;
+            background-color: #fff5f5;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>考生能力评估</h1>
+        <div class="user-input">
+            <input type="number" id="userId" placeholder="请输入用户ID" value="1">
+            <button onclick="evaluateAbility()">评估能力</button>
+        </div>
+    </div>
+    
+    <div class="content">
+        <div class="chart-container">
+            <canvas id="abilityRadarChart"></canvas>
+        </div>
+        <div class="report-container">
+            <h3>能力评估报告</h3>
+            <div id="reportContent">
+                <p>请输入用户ID并点击评估按钮</p>
+            </div>
+            <div class="weak-points" id="weakPointsContainer">
+                <h4>薄弱点</h4>
+                <p id="weakPoints">暂无数据</p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let abilityChart;
+        
+        // 初始化雷达图
+        function initChart() {
+            const ctx = document.getElementById('abilityRadarChart').getContext('2d');
+            abilityChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['常识判断', '言语理解', '数量关系', '判断推理', '资料分析', '申论'],
+                    datasets: [{
+                        label: '能力值',
+                        data: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5],
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    scales: {
+                        r: {
+                            min: 0,
+                            max: 1,
+                            ticks: {
+                                stepSize: 0.2
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // 评估能力
+        function evaluateAbility() {
+            const userId = document.getElementById('userId').value;
+            
+            if (!userId) {
+                alert('请输入用户ID');
+                return;
+            }
+            
+            fetch(`/api/ability/evaluate?userId=${userId}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data) {
+                        // 更新雷达图
+                        updateChart(data.radarData);
+                        
+                        // 更新报告
+                        document.getElementById('reportContent').innerHTML = markdownToHtml(data.report);
+                        
+                        // 更新薄弱点
+                        if (data.weakPoints && data.weakPoints.length > 0) {
+                            document.getElementById('weakPoints').innerHTML = data.weakPoints.map(point => `<li>${point}</li>`).join('');
+                        } else {
+                            document.getElementById('weakPoints').innerHTML = '无明显薄弱点';
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('评估失败:', error);
+                    alert('评估失败，请重试');
+                });
+        }
+        
+        // 更新雷达图
+        function updateChart(radarData) {
+            if (abilityChart) {
+                abilityChart.data.labels = radarData.modules;
+                abilityChart.data.datasets[0].data = radarData.values;
+                abilityChart.update();
+            }
+        }
+        
+        // Markdown转HTML
+        function markdownToHtml(markdown) {
+            return markdown
+                .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+                .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+                .replace(/^- (.*$)/gim, '<li>$1</li>')
+                .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
+                .replace(/\n/g, '<br>');
+        }
+        
+        // 初始化
+        window.onload = function() {
+            initChart();
+        };
+    </script>
+</body>
+</html>

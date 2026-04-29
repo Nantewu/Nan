@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>考公智能学习系统 - 登录</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', 'PingFang SC', sans-serif;
+            background-color: #00b38a; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .login-wrapper {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+            display: flex;
+            width: 800px;
+            height: 450px;
+            overflow: hidden;
+        }
+        .left-illustration {
+            width: 50%;
+            background: #f4f7f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-image: url('https://api.dicebear.com/7.x/micah/svg?seed=study&backgroundColor=f4f7f6');
+            background-size: 80%;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        .right-form {
+            width: 50%;
+            padding: 40px 50px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .right-form h2 {
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 22px;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        .input-group input:focus { border-color: #00b38a; }
+        .captcha-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .captcha-group input {
+            width: 60%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .captcha-canvas {
+            width: 35%;
+            height: 42px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #00b38a;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        button:hover { background-color: #009673; }
+        
+        /* 底部链接样式 */
+        .footer-links {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            font-size: 13px;
+        }
+        .footer-links a {
+            color: #666;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        .footer-links a:hover {
+            color: #00b38a;
+        }
+        .forgot-link {
+            color: #00b38a !important;
+        }
+
+        #message { margin-top: 15px; font-size: 14px; text-align: center; min-height: 20px; }
+    </style>
+</head>
+<body>
+    <div class="login-wrapper">
+        <div class="left-illustration"></div>
+        <div class="right-form">
+            <h2>考公智能系统登录</h2>
+            <div class="input-group">
+                <input type="text" id="username" placeholder="请输入账号">
+            </div>
+            <div class="input-group">
+                <input type="password" id="password" placeholder="请输入密码">
+            </div>
+            <div class="captcha-group">
+                <input type="text" id="captcha-input" placeholder="验证码">
+                <canvas id="captcha-img" class="captcha-canvas" onclick="drawCaptcha()" title="点击刷新"></canvas>
+            </div>
+            <button onclick="doLogin()">登 录</button>
+            
+            <div class="footer-links">
+                <a href="/register.html">没有账号？去注册</a>
+                <a href="/forgot_password.html" class="forgot-link">忘记密码？</a>
+            </div>
+
+            <div id="message"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentCaptcha = ""; 
+        window.onload = function() { drawCaptcha(); };
+
+        function drawCaptcha() {
+            const canvas = document.getElementById('captcha-img');
+            const ctx = canvas.getContext('2d');
+            canvas.width = 100; canvas.height = 40;
+            ctx.fillStyle = '#f2f2f2';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            currentCaptcha = '';
+            for (let i = 0; i < 4; i++) {
+                currentCaptcha += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            for (let i = 0; i < 4; i++) {
+                ctx.font = '24px Arial';
+                ctx.fillStyle = '#' + Math.floor(Math.random()*16777215).toString(16);
+                ctx.save();
+                ctx.translate(20 * i + 15, 25); 
+                ctx.rotate((Math.random()-0.5)*0.3);
+                ctx.fillText(currentCaptcha[i], 0, 0);
+                ctx.restore();
+            }
+        }
+
+        function doLogin() {
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+            const captchaInput = document.getElementById('captcha-input').value;
+            const msgDiv = document.getElementById('message');
+
+            if (captchaInput.toUpperCase() !== currentCaptcha.toUpperCase()) {
+                msgDiv.style.color = "#e74c3c";
+                msgDiv.innerText = "验证码错误！";
+                drawCaptcha();
+                return;
+            }
+
+            fetch(`/api/user/login?username=${user}&password=${pass}`)
+                .then(response => response.text())
+                .then(data => {
+                    if (data.startsWith("成功")) {
+                        const info = data.split("|");
+                        const role = String(info[1]); 
+
+                        msgDiv.style.color = "#00b38a";
+                        msgDiv.innerText = "登录成功，正在进入系统...";
+                        
+                        setTimeout(() => { 
+                            if (role === "1") {
+                                window.location.href = "/admin_index.html"; 
+                            } else {
+                                window.location.href = "/dashboard.html"; 
+                            }
+                        }, 1000);
+                    } else {
+                        msgDiv.style.color = "#e74c3c";
+                        msgDiv.innerText = data;
+                        drawCaptcha();
+                    }
+                })
+                .catch(err => {
+                    msgDiv.style.color = "#e74c3c";
+                    msgDiv.innerText = "连接服务器失败";
+                });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>考公知识图谱</title>
+    <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .module-selector {
+            padding: 8px;
+            font-size: 14px;
+        }
+        #network {
+            width: 100%;
+            height: 700px;
+            border: 1px solid lightgray;
+        }
+        .info-panel {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .info-panel h3 {
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>考公知识图谱</h1>
+        <select class="module-selector" id="moduleSelector">
+            <option value="常识判断">常识判断</option>
+            <option value="言语理解">言语理解</option>
+            <option value="数量关系">数量关系</option>
+            <option value="判断推理">判断推理</option>
+            <option value="资料分析">资料分析</option>
+            <option value="申论">申论</option>
+        </select>
+    </div>
+    
+    <div id="network"></div>
+    
+    <div class="info-panel" id="infoPanel">
+        <h3>知识点详情</h3>
+        <p>点击知识点节点查看详细信息</p>
+    </div>
+    
+    <script>
+        let network;
+        let currentModule = '常识判断';
+        
+        // 初始化网络
+        function initNetwork() {
+            const container = document.getElementById('network');
+            
+            // 初始配置
+            const options = {
+                physics: {
+                    enabled: true,
+                    stabilization: {
+                        enabled: true,
+                        iterations: 1000
+                    }
+                },
+                interaction: {
+                    zoomView: true,
+                    dragView: true,
+                    dragNodes: true,
+                    hover: true
+                },
+                nodes: {
+                    shape: 'box',
+                    size: 20,
+                    font: {
+                        size: 12
+                    }
+                },
+                edges: {
+                    width: 1,
+                    font: {
+                        size: 10
+                    }
+                }
+            };
+            
+            network = new vis.Network(container, { nodes: [], edges: [] }, options);
+            
+            // 点击事件
+            network.on('click', function(params) {
+                if (params.nodes.length > 0) {
+                    const nodeId = params.nodes[0];
+                    showNodeInfo(nodeId);
+                    highlightPath(nodeId);
+                }
+            });
+            
+            // 悬停事件
+            network.on('hoverNode', function(params) {
+                const nodeId = params.node;
+                // 可以添加悬停效果
+            });
+        }
+        
+        // 加载指定模块的知识图谱
+        function loadGraphData(module) {
+            fetch(`/api/knowledge/graph?module=${encodeURIComponent(module)}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.nodes && data.edges) {
+                        const nodes = new vis.DataSet(data.nodes);
+                        const edges = new vis.DataSet(data.edges);
+                        network.setData({ nodes, edges });
+                    } else {
+                        document.getElementById('network').innerHTML = "暂无数据";
+                    }
+                })
+                .catch(error => {
+                    console.error('加载数据失败:', error);
+                    document.getElementById('network').innerHTML = "加载数据失败";
+                });
+        }
+        
+        // 显示节点详情
+        function showNodeInfo(nodeId) {
+            fetch(`/api/knowledge/point?kpId=${encodeURIComponent(nodeId)}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data) {
+                        const infoPanel = document.getElementById('infoPanel');
+                        infoPanel.innerHTML = `
+                            <h3>知识点详情</h3>
+                            <p><strong>名称:</strong> ${data.name}</p>
+                            <p><strong>模块:</strong> ${data.module}</p>
+                            <p><strong>难度:</strong> ${data.difficulty}</p>
+                            <p><strong>考查频次:</strong> ${data.frequency}</p>
+                            <p><strong>核心概念:</strong> ${data.coreConcept || '无'}</p>
+                            <p><strong>建议掌握时长:</strong> ${data.suggestedTime}分钟</p>
+                            <p><strong>掌握度阈值:</strong> ${data.masteryScore}</p>
+                        `;
+                    }
+                });
+        }
+        
+        // 高亮路径
+        function highlightPath(nodeId) {
+            // 这里可以实现路径高亮逻辑
+            // 例如获取节点的前驱和后继节点，并高亮显示
+        }
+        
+        // 模块选择事件
+        document.getElementById('moduleSelector').addEventListener('change', function(e) {
+            currentModule = e.target.value;
+            loadGraphData(currentModule);
+        });
+        
+        // 初始化
+        window.onload = function() {
+            initNetwork();
+            loadGraphData(currentModule);
+        };
+    </script>
+</body>
+</html>

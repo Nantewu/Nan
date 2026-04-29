@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>错题根因分析</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .user-input {
+            display: flex;
+            gap: 10px;
+        }
+        .user-input input {
+            padding: 8px;
+            font-size: 14px;
+        }
+        .user-input button {
+            padding: 8px 16px;
+            font-size: 14px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .user-input button:hover {
+            background-color: #45a049;
+        }
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .question-detail {
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .analysis-result {
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .related-points {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f0f0f0;
+        }
+        .related-points h4 {
+            margin-top: 0;
+        }
+        .suggestion {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ffcccc;
+            border-radius: 5px;
+            background-color: #fff5f5;
+        }
+        .suggestion h4 {
+            margin-top: 0;
+        }
+        pre {
+            white-space: pre-wrap;
+            font-family: Arial, sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>错题根因分析</h1>
+        <div class="user-input">
+            <input type="number" id="wrongQuestionId" placeholder="请输入错题ID" value="1">
+            <button onclick="analyzeWrongQuestion()">分析错题</button>
+        </div>
+    </div>
+    
+    <div class="content">
+        <div class="question-detail" id="questionDetail">
+            <h3>错题详情</h3>
+            <p>请输入错题ID并点击分析按钮</p>
+        </div>
+        <div class="analysis-result" id="analysisResult">
+            <h3>分析结果</h3>
+            <p>请输入错题ID并点击分析按钮</p>
+        </div>
+    </div>
+    
+    <div class="related-points" id="relatedPoints">
+        <h4>相关知识点</h4>
+        <p>请输入错题ID并点击分析按钮</p>
+    </div>
+    
+    <div class="suggestion" id="remediationSuggestion">
+        <h4>补救建议</h4>
+        <p>请输入错题ID并点击分析按钮</p>
+    </div>
+    
+    <script>
+        // 分析错题
+        function analyzeWrongQuestion() {
+            const wrongQuestionId = document.getElementById('wrongQuestionId').value;
+            
+            if (!wrongQuestionId) {
+                alert('请输入错题ID');
+                return;
+            }
+            
+            fetch(`/api/wrong-question/analyze?wrongQuestionId=${wrongQuestionId}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data) {
+                        // 更新错题详情
+                        updateQuestionDetail(data.wrongQuestion);
+                        
+                        // 更新分析结果
+                        updateAnalysisResult(data.analysis);
+                        
+                        // 更新相关知识点
+                        updateRelatedPoints(data.relatedPoints);
+                        
+                        // 更新补救建议
+                        updateRemediationSuggestion(data.analysis.remediationSuggestion);
+                    }
+                })
+                .catch(error => {
+                    console.error('分析失败:', error);
+                    alert('分析失败，请重试');
+                });
+        }
+        
+        // 更新错题详情
+        function updateQuestionDetail(wrongQuestion) {
+            const questionDetail = document.getElementById('questionDetail');
+            questionDetail.innerHTML = `
+                <h3>错题详情</h3>
+                <p><strong>题目内容:</strong> ${wrongQuestion.questionContent}</p>
+                <p><strong>用户答案:</strong> ${wrongQuestion.userAnswer}</p>
+                <p><strong>正确答案:</strong> ${wrongQuestion.correctAnswer}</p>
+                <p><strong>知识点:</strong> ${wrongQuestion.knowledgePoint}</p>
+                <p><strong>模块:</strong> ${wrongQuestion.module}</p>
+                <p><strong>错误原因:</strong> ${wrongQuestion.errorReason}</p>
+            `;
+        }
+        
+        // 更新分析结果
+        function updateAnalysisResult(analysis) {
+            const analysisResult = document.getElementById('analysisResult');
+            analysisResult.innerHTML = `
+                <h3>分析结果</h3>
+                <p><strong>语义分析:</strong> ${analysis.semanticAnalysis}</p>
+                <p><strong>根因分析:</strong> ${analysis.rootCause}</p>
+                <p><strong>相关知识点:</strong> ${analysis.relatedKnowledgePoints}</p>
+            `;
+        }
+        
+        // 更新相关知识点
+        function updateRelatedPoints(relatedPoints) {
+            const relatedPointsContainer = document.getElementById('relatedPoints');
+            if (relatedPoints && relatedPoints.length > 0) {
+                let html = '<h4>相关知识点</h4><ul>';
+                relatedPoints.forEach(point => {
+                    html += `<li>${point.name} (${point.module})</li>`;
+                });
+                html += '</ul>';
+                relatedPointsContainer.innerHTML = html;
+            } else {
+                relatedPointsContainer.innerHTML = '<h4>相关知识点</h4><p>暂无相关知识点</p>';
+            }
+        }
+        
+        // 更新补救建议
+        function updateRemediationSuggestion(suggestion) {
+            const suggestionContainer = document.getElementById('remediationSuggestion');
+            suggestionContainer.innerHTML = `
+                <h4>补救建议</h4>
+                <pre>${suggestion}</pre>
+            `;
+        }
+    </script>
+</body>
+</html>
